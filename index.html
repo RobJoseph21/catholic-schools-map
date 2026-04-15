@@ -668,7 +668,7 @@
 // ============================================================
 // GLOBALS
 // ============================================================
-let map, schoolMarkers, boundaryLayer, allSchools = [], allStats = {};
+let map, tileLayer, schoolMarkers, boundaryLayer, allSchools = [], allStats = {};
 let tomSelectInstance = null;
 const GEO_DIR = 'geo';
 const DATA_DIR = 'data';
@@ -713,7 +713,7 @@ function initMap() {
         wheelPxPerZoomLevel: 120,
     });
 
-    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    tileLayer = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
         attribution: '&copy; OpenStreetMap &copy; CARTO',
         maxZoom: 19,
     }).addTo(map);
@@ -744,6 +744,9 @@ async function loadData() {
     addSchoolDots(allSchools);
     updateStats(null);
     buildSearch();
+
+    // Retry any map tiles that failed during initial network congestion
+    setTimeout(function() { tileLayer.redraw(); }, 2000);
 }
 
 // ============================================================
