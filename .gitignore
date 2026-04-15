@@ -1,0 +1,27 @@
+# Backup and trial files
+index_backup.html
+index_backup_v2.html
+pdf_trial.html
+pdf_trial_jspdf.html
+icon_preview.html
+test_output*.pdf
+
+# Python scripts (data pipeline, not needed for the website)
+rebuild_data.py
+validate.py
+*.pyc
+__pycache__/
+
+# Stitch reference (design only)
+stitch_ref/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Old SVG icons (replaced by Lucide)
+Icon_School.svg
+Icon_Backpack.svg
+Icon_Teacher.svg
+Icon_Family.svg
+Icon_PiggyBank.svg

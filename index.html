@@ -1,0 +1,1301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Catholic Schools in Australia</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/css/tom-select.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --navy: #0d3b66;
+            --navy-light: #1a5276;
+            --navy-deep: #002546;
+            --gold: #ffa031;
+            --gold-dark: #e8912a;
+            --gold-warm: #FFF9F0;
+            --salmon: #e36c78;
+            --sky: #00c4f0;
+            --sky-light: #e8f8fd;
+            --white: #ffffff;
+            --grey-light: #f1f5f9;
+            --grey-mid: #94a3b8;
+            --grey-text: #475569;
+            --outline: #cbd5e1;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--grey-light);
+            color: var(--navy);
+            overflow: hidden;
+        }
+
+        /* ===== DUMMY BANNER ===== */
+        .dummy-banner {
+            background: var(--salmon);
+            color: white;
+            text-align: center;
+            padding: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1px;
+        }
+
+        /* ===== HEADER ===== */
+        .header {
+            background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
+            color: white;
+            padding: 0 32px;
+            height: 56px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 24px;
+            flex-wrap: nowrap;
+            position: relative;
+            z-index: 1001;
+        }
+
+        .header-brand {
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-title {
+            font-size: 20px;
+            font-weight: 700;
+            white-space: nowrap;
+            letter-spacing: -0.01em;
+        }
+
+        .header-title span {
+            color: white;
+        }
+
+        .search-container {
+            flex: 0 1 480px;
+            min-width: 280px;
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .main {
+            display: flex;
+            height: calc(100vh - 80px);
+        }
+
+        /* ===== STATS PANEL ===== */
+        .stats-panel {
+            width: 360px;
+            min-width: 360px;
+            background: var(--grey-light);
+            padding: 20px 24px;
+            overflow-y: auto;
+            border-right: none;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .stats-geo-type {
+            font-size: 0.8125rem;
+            color: var(--grey-text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            opacity: 0.7;
+            margin-bottom: -6px;
+        }
+
+        .stats-geo-name {
+            font-size: 2rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+            margin-bottom: 0;
+        }
+
+
+        .stats-headline {
+            font-size: 1rem;
+            color: var(--grey-text);
+            line-height: 1.6;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .stats-headline strong {
+            color: var(--navy);
+            font-weight: 700;
+        }
+
+        .stat-card {
+            background: var(--white);
+            border-radius: 8px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid var(--navy);
+            transition: box-shadow 0.15s ease;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            position: relative;
+        }
+
+        .stat-card:hover {
+            box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+        }
+
+        .stat-card.highlight {
+            background: var(--gold-warm);
+            border-left: 4px solid var(--gold);
+            border: 2px solid var(--gold);
+            border-left-width: 4px;
+        }
+
+        .stat-card.highlight .stat-value {
+            color: var(--gold-dark);
+        }
+
+        .stat-card.highlight .stat-label {
+            color: var(--navy);
+            font-weight: 800;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--navy);
+            opacity: 0.35;
+            flex-shrink: 0;
+            order: 1;
+            margin-left: auto;
+        }
+
+        .stat-card.highlight .stat-icon {
+            color: var(--gold);
+            opacity: 0.5;
+        }
+
+        .stat-content {
+            flex: 1;
+        }
+
+        .stat-value {
+            font-size: 2.125rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .stat-label {
+            font-size: 0.8125rem;
+            color: var(--grey-text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-top: 6px;
+            opacity: 0.7;
+        }
+
+        .stat-breakdown {
+            display: none !important;
+        }
+
+        .download-btn {
+            margin-top: auto;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, var(--navy-deep) 0%, var(--navy) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            font-family: 'Inter', sans-serif;
+            text-align: center;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(13,59,102,0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .download-btn:hover {
+            background: var(--navy-light);
+            box-shadow: 0 6px 20px rgba(13,59,102,0.3);
+            transform: translateY(-1px);
+        }
+
+        /* ===== MAP ===== */
+        .map-container {
+            flex: 1;
+            position: relative;
+        }
+
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+
+        .leaflet-control-attribution {
+            font-size: 9px !important;
+            opacity: 0.4 !important;
+            background: transparent !important;
+        }
+
+        /* ===== LEAFLET POPUP OVERRIDE ===== */
+        .leaflet-popup-content-wrapper {
+            border-radius: 6px !important;
+            border: 1px solid rgba(203,213,225,0.15) !important;
+            box-shadow: 0 8px 32px rgba(23,28,31,0.06) !important;
+            padding: 0 !important;
+        }
+
+        .leaflet-popup-content {
+            margin: 16px 20px !important;
+            padding-right: 12px !important;
+            font-family: 'Inter', sans-serif !important;
+        }
+
+        .leaflet-popup-tip {
+            display: none !important;
+        }
+
+        .leaflet-popup-close-button {
+            color: var(--grey-mid) !important;
+            font-size: 18px !important;
+            top: 8px !important;
+            right: 10px !important;
+        }
+
+        /* ===== SCHOOL POPUP ===== */
+        .school-popup h3 {
+            font-family: 'Inter', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--navy);
+            margin-bottom: 4px;
+            line-height: 1.3;
+        }
+
+        .school-popup .detail {
+            font-size: 0.875rem;
+            color: var(--grey-text);
+            margin: 1px 0;
+            line-height: 1.5;
+        }
+
+        .school-popup .savings-line {
+            font-size: 0.875rem;
+            color: var(--grey-text);
+            font-weight: 700;
+            margin-top: 4px;
+        }
+
+        /* ===== TOM SELECT ===== */
+        .ts-control {
+            border-radius: 12px !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            background: rgba(255,255,255,0.15) !important;
+            color: white !important;
+            padding: 10px 18px !important;
+            font-family: 'Inter', sans-serif !important;
+            font-weight: 500 !important;
+            font-size: 15px !important;
+            backdrop-filter: blur(4px);
+            box-shadow: inset 0 1px 2px rgba(0,0,0,0.1);
+        }
+
+        .ts-control input {
+            color: white !important;
+        }
+
+        .ts-control input::placeholder {
+            color: rgba(255,255,255,0.7) !important;
+        }
+
+        .ts-wrapper {
+            position: relative;
+            z-index: 1000 !important;
+        }
+
+        .ts-dropdown {
+            z-index: 10000 !important;
+            position: absolute !important;
+            font-family: 'Inter', sans-serif !important;
+            border-radius: 12px !important;
+            border: none !important;
+            box-shadow: 0 12px 40px rgba(0,0,0,0.12) !important;
+        }
+
+        .ts-dropdown .optgroup-header {
+            font-size: 11px;
+            text-transform: uppercase;
+            color: var(--grey-mid);
+            letter-spacing: 2px;
+            font-weight: 700;
+            padding: 10px 14px 4px;
+        }
+
+        .ts-dropdown .option {
+            font-weight: 500;
+            color: var(--navy);
+            font-size: 14px;
+            padding: 8px 14px;
+        }
+
+        .ts-dropdown .option.active {
+            background: var(--grey-light);
+            color: var(--navy);
+        }
+
+        /* Hide the dropdown caret */
+        .ts-control::after {
+            display: none !important;
+        }
+
+        /* ===== MOBILE ===== */
+        @media (max-width: 768px) {
+            body { overflow: auto; }
+
+            .main {
+                flex-direction: column;
+                height: auto;
+            }
+
+            .stats-panel {
+                width: 100%;
+                min-width: auto;
+                border-right: none;
+                padding: 20px;
+            }
+
+            .map-container {
+                height: 50vh;
+            }
+
+            .header { padding: 0 16px; height: 60px; }
+            .header-title { font-size: 16px; }
+            .stats-geo-name { font-size: 1.5rem; }
+            .stat-value { font-size: 1.5rem; }
+            .stat-card { padding: 14px 16px; }
+        }
+
+        /* ===== PDF TEMPLATE ===== */
+        #pdf-template {
+            visibility: hidden;
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 1123px;
+            height: 794px;
+            background: #ffffff;
+            overflow: hidden;
+        }
+
+        .pdf-header {
+            padding: 24px 32px 0 32px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .pdf-header-left { flex: 1; }
+
+        .pdf-subtitle {
+            font-size: 17px;
+            color: var(--grey-text);
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .pdf-geo-name {
+            font-size: 52px;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .pdf-geo-suffix {
+            font-weight: 400;
+        }
+
+        .pdf-rule {
+            height: 3px;
+            background: var(--navy);
+            margin: 8px 32px 0 32px;
+        }
+
+        .pdf-content {
+            display: flex;
+            padding: 0 32px;
+            gap: 28px;
+            height: 647px;
+        }
+
+        .pdf-map-area {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .pdf-map-area img {
+            width: 100%;
+            height: 100%;
+        }
+
+        .pdf-stats {
+            width: 340px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            justify-content: center;
+        }
+
+        .pdf-stat-card {
+            background: var(--grey-light);
+            border-radius: 8px;
+            padding: 18px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border-left: 4px solid var(--navy);
+            position: relative;
+        }
+
+        .pdf-stat-card .pdf-stat-content { flex: 1; }
+
+        .pdf-stat-card .pdf-stat-value {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--navy);
+            line-height: 1.1;
+            letter-spacing: -0.02em;
+        }
+
+        .pdf-stat-card .pdf-stat-label {
+            font-size: 0.8125rem;
+            color: var(--grey-text);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            font-weight: 700;
+            margin-top: 4px;
+            opacity: 0.7;
+        }
+
+        .pdf-stat-card .pdf-stat-icon {
+            width: 48px; height: 48px;
+            display: flex; align-items: center; justify-content: center;
+            color: var(--navy); opacity: 0.45;
+            flex-shrink: 0; margin-left: auto;
+        }
+
+        .pdf-stat-card.pdf-highlight {
+            background: var(--gold-warm);
+            border-left: 4px solid var(--gold);
+            border: 2px solid var(--gold);
+            border-left-width: 4px;
+        }
+
+        .pdf-stat-card.pdf-highlight .pdf-stat-value { color: var(--gold-dark); }
+        .pdf-stat-card.pdf-highlight .pdf-stat-label { color: var(--navy); font-weight: 800; opacity: 1; }
+        .pdf-stat-card.pdf-highlight .pdf-stat-icon { color: var(--gold); opacity: 0.5; }
+
+        .pdf-footer {
+            position: absolute; bottom: 0; left: 0; right: 0;
+        }
+
+        .pdf-disclaimer {
+            padding: 0 32px 8px 32px;
+            font-size: 9px; color: var(--grey-mid);
+        }
+
+        .pdf-footer-bar { height: 12px; display: flex; }
+        .pdf-footer-bar-navy { flex: 1; background: var(--navy); }
+        .pdf-footer-bar-orange { flex: 1; background: #F9A85C; }
+    </style>
+</head>
+<body>
+
+
+<div class="header">
+    <div class="header-brand" onclick="resetToNational()" title="Back to Australia">
+        <div class="header-title">Catholic Schools <span>in Australia</span></div>
+    </div>
+    <div class="search-container">
+        <select id="geo-search" placeholder="Search electorate, diocese, LGA, suburb..."></select>
+    </div>
+</div>
+
+<div class="main">
+    <div class="stats-panel" id="stats-panel">
+        <div class="stats-geo-type" id="geo-type">NATIONAL</div>
+        <div class="stats-geo-name" id="geo-name">Australia</div>
+        <div class="stats-headline" id="stats-headline">
+            Catholic schools educate <strong>1 in 5</strong> Australian students, saving taxpayers billions every year.
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value" id="stat-schools">—</div>
+                <div class="stat-label">Catholic Schools</div>
+            </div>
+            <div class="stat-icon"><i data-lucide="school" style="width:36px;height:36px;stroke-width:1.5"></i></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value" id="stat-students">—</div>
+                <div class="stat-label">Students</div>
+            </div>
+            <div class="stat-icon"><i data-lucide="backpack" style="width:36px;height:36px;stroke-width:1.5"></i></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value" id="stat-staff">—</div>
+                <div class="stat-label">Staff</div>
+            </div>
+            <div class="stat-icon"><i data-lucide="user-check" style="width:36px;height:36px;stroke-width:1.5"></i></div>
+        </div>
+
+        <div class="stat-card">
+            <div class="stat-content">
+                <div class="stat-value" id="stat-catholic">—</div>
+                <div class="stat-label">Catholic Community</div>
+            </div>
+            <div class="stat-icon"><i data-lucide="church" style="width:36px;height:36px;stroke-width:1.5"></i></div>
+        </div>
+
+        <div class="stat-card highlight" title="Hover for breakdown">
+            <div class="stat-content">
+                <div class="stat-value" id="stat-total-savings">—</div>
+                <div class="stat-label">Taxpayer Savings</div>
+                <div class="stat-breakdown" id="stat-savings-breakdown"></div>
+            </div>
+            <div class="stat-icon"><i data-lucide="circle-dollar-sign" style="width:40px;height:40px;stroke-width:1.5"></i></div>
+        </div>
+
+        <button class="download-btn" id="download-btn" onclick="downloadPDF()"><i data-lucide="file-down" style="width:20px;height:20px;stroke-width:2"></i> Download as PDF</button>
+    </div>
+
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+</div>
+
+<!-- PDF Template (hidden offscreen, rendered by html2canvas) -->
+<div id="pdf-template">
+    <div class="pdf-header">
+        <div class="pdf-header-left">
+            <div class="pdf-subtitle">Catholic school community in</div>
+            <div class="pdf-geo-name" id="pdf-geo-name">Australia</div>
+        </div>
+    </div>
+    <div class="pdf-rule"></div>
+    <div class="pdf-content">
+        <div class="pdf-map-area">
+            <img id="pdf-map" src="" alt="Map">
+        </div>
+        <div class="pdf-stats">
+            <div class="pdf-stat-card">
+                <div class="pdf-stat-content">
+                    <div class="pdf-stat-value" id="pdf-schools">—</div>
+                    <div class="pdf-stat-label">Catholic Schools</div>
+                </div>
+                <div class="pdf-stat-icon"><i data-lucide="school" style="width:44px;height:44px;stroke-width:1.5"></i></div>
+            </div>
+            <div class="pdf-stat-card">
+                <div class="pdf-stat-content">
+                    <div class="pdf-stat-value" id="pdf-students">—</div>
+                    <div class="pdf-stat-label">Students</div>
+                </div>
+                <div class="pdf-stat-icon"><i data-lucide="backpack" style="width:44px;height:44px;stroke-width:1.5"></i></div>
+            </div>
+            <div class="pdf-stat-card">
+                <div class="pdf-stat-content">
+                    <div class="pdf-stat-value" id="pdf-staff">—</div>
+                    <div class="pdf-stat-label">Staff</div>
+                </div>
+                <div class="pdf-stat-icon"><i data-lucide="user-check" style="width:44px;height:44px;stroke-width:1.5"></i></div>
+            </div>
+            <div class="pdf-stat-card">
+                <div class="pdf-stat-content">
+                    <div class="pdf-stat-value" id="pdf-community">—</div>
+                    <div class="pdf-stat-label">Catholic Community</div>
+                </div>
+                <div class="pdf-stat-icon"><i data-lucide="church" style="width:44px;height:44px;stroke-width:1.5"></i></div>
+            </div>
+            <div class="pdf-stat-card pdf-highlight">
+                <div class="pdf-stat-content">
+                    <div class="pdf-stat-value" id="pdf-savings">—</div>
+                    <div class="pdf-stat-label">Taxpayer Savings</div>
+                </div>
+                <div class="pdf-stat-icon"><i data-lucide="circle-dollar-sign" style="width:40px;height:40px;stroke-width:1.5"></i></div>
+            </div>
+        </div>
+    </div>
+    <div class="pdf-footer">
+        <div class="pdf-disclaimer">Sources: Catholic Schools NSW analysis, Cth Dept. of Education CTC Scores 2025, ACARA My School 2025, ABS Census 2021</div>
+        <div class="pdf-footer-bar">
+            <div class="pdf-footer-bar-navy"></div>
+            <div class="pdf-footer-bar-orange"></div>
+        </div>
+    </div>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/tom-select@2.3.1/dist/js/tom-select.complete.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+// ============================================================
+// GLOBALS
+// ============================================================
+let map, schoolMarkers, boundaryLayer, allSchools = [], allStats = {};
+let tomSelectInstance = null;
+const GEO_DIR = 'geo';
+const DATA_DIR = 'data';
+
+// State abbreviation → full name mapping
+const STATE_NAMES = {
+    'ACT': 'Australian Capital Territory',
+    'NSW': 'New South Wales',
+    'NT':  'Northern Territory',
+    'QLD': 'Queensland',
+    'SA':  'South Australia',
+    'TAS': 'Tasmania',
+    'VIC': 'Victoria',
+    'WA':  'Western Australia',
+};
+function stateName(abbr) { return STATE_NAMES[abbr] || abbr; }
+
+const ARCHDIOCESES = ['Sydney', 'Melbourne', 'Brisbane', 'Perth', 'Adelaide', 'Hobart', 'Canberra & Goulburn'];
+
+function geoSuffix(geoType, name) {
+    if (geoType === 'diocese') return ARCHDIOCESES.includes(name) ? 'Archdiocese' : 'diocese';
+    if (geoType === 'ced') return 'Federal Electorate';
+    if (geoType === 'sed') return 'State Electorate';
+    if (geoType === 'lga') return 'Local Government Area';
+    if (geoType === 'suburb') return 'Suburb';
+    return '';
+}
+
+// No hardcoded bounds — computed from school dot locations at load time.
+let SCHOOL_BOUNDS = null;
+
+// ============================================================
+// INIT MAP
+// ============================================================
+function initMap() {
+    map = L.map('map', {
+        center: [-28.5, 134],
+        zoom: 5,
+        zoomControl: true,
+        zoomSnap: 0.5,
+        zoomDelta: 0.5,
+        wheelPxPerZoomLevel: 120,
+    });
+
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap &copy; CARTO',
+        maxZoom: 19,
+    }).addTo(map);
+
+    boundaryLayer = L.layerGroup().addTo(map);
+    schoolMarkers = L.layerGroup().addTo(map);
+}
+
+// ============================================================
+// LOAD DATA
+// ============================================================
+async function loadData() {
+    const schoolsResp = await fetch(`${DATA_DIR}/schools.json`);
+    allSchools = await schoolsResp.json();
+
+    for (const geoType of ['state', 'diocese', 'ced', 'sed', 'lga', 'suburb']) {
+        try {
+            const resp = await fetch(`${DATA_DIR}/stats_${geoType}.json`);
+            if (resp.ok) allStats[geoType] = await resp.json();
+        } catch(e) {}
+    }
+
+    // Compute national bounds from school locations (data-driven).
+    // Pad slightly so dots aren't at the very edge.
+    SCHOOL_BOUNDS = computeSchoolBounds(allSchools);
+    map.fitBounds(SCHOOL_BOUNDS, { padding: [15, 40] });
+
+    addSchoolDots(allSchools);
+    updateStats(null);
+    buildSearch();
+}
+
+// ============================================================
+// BOUNDS — data-driven from school locations
+// ============================================================
+function computeSchoolBounds(schools) {
+    const lats = schools.filter(s => s.lat && s.lon).map(s => s.lat);
+    const lons = schools.filter(s => s.lat && s.lon).map(s => s.lon);
+    if (lats.length === 0) return L.latLngBounds([[-44, 112], [-10, 154]]);
+    return L.latLngBounds(
+        [Math.min(...lats), Math.min(...lons)],
+        [Math.max(...lats), Math.max(...lons)]
+    );
+}
+
+// ============================================================
+// SCHOOL DOTS
+// ============================================================
+function addSchoolDots(schools) {
+    schoolMarkers.clearLayers();
+
+    schools.forEach(s => {
+        if (!s.lat || !s.lon) return;
+
+        const marker = L.circleMarker([s.lat, s.lon], {
+            radius: 5,
+            fillColor: '#ffa031',
+            color: '#e8912a',
+            weight: 1.5,
+            fillOpacity: 0.6,
+        });
+
+        let popup = `<div class="school-popup">
+            <h3>${s.name}</h3>
+            <div class="detail">${s.suburb || ''}, ${s.state || ''} ${s.postcode || ''}</div>`;
+
+        if (s.enrolments) popup += `<div class="detail">Students: ${s.enrolments.toLocaleString()}</div>`;
+        if (s.total_staff) popup += `<div class="detail">Staff: ${s.total_staff.toLocaleString()}</div>`;
+        if (s.total_savings) popup += `<div class="savings-line">Taxpayer savings: $${formatMoney(s.total_savings)}</div>`;
+
+        popup += '</div>';
+        marker.bindPopup(popup);
+        schoolMarkers.addLayer(marker);
+    });
+}
+
+// ============================================================
+// STATS PANEL
+// ============================================================
+function updateStats(selection) {
+    if (!selection) {
+        document.getElementById('geo-type').textContent = 'NATIONAL';
+        document.getElementById('geo-name').textContent = 'Australia';
+
+        let schools = 0, students = 0, staff = 0, catholic = 0, capex = 0, ctc = 0;
+        allSchools.forEach(s => {
+            schools++;
+            students += s.enrolments || 0;
+            staff += s.total_staff || 0;
+            capex += s.capex_savings || 0;
+            ctc += s.ctc_savings || 0;
+        });
+        if (allStats.state) {
+            allStats.state.forEach(s => { catholic += s.catholic_pop || 0; });
+        }
+        document.getElementById('stats-headline').innerHTML =
+            `<strong>${schools.toLocaleString()}</strong> Catholic schools in Australia educate <strong>${students.toLocaleString()}</strong> students, saving taxpayers <strong>$${formatMoney(capex + ctc)}</strong> each year`;
+        setStats(schools, students, staff, catholic, capex, ctc);
+        return;
+    }
+
+    const { geoType, name } = selection;
+    const stats = allStats[geoType];
+    if (!stats) return;
+
+    const match = stats.find(s => s.name === name);
+    if (!match) return;
+
+    const typeLabels = {
+        state: 'STATE', diocese: 'DIOCESE', ced: 'FEDERAL ELECTORATE',
+        sed: 'STATE ELECTORATE', lga: 'LOCAL GOVERNMENT AREA', suburb: 'SUBURB',
+    };
+
+    document.getElementById('geo-type').textContent = typeLabels[geoType] || geoType.toUpperCase();
+    const displayName = geoType === 'state' ? stateName(name) : name;
+    document.getElementById('geo-name').textContent = displayName;
+
+    // Dynamic headline
+    const savings = match.capex_savings + match.ctc_savings;
+    const headline = match.schools > 0
+        ? `<strong>${match.schools}</strong> Catholic school${match.schools !== 1 ? 's' : ''} in ${displayName} educate${match.schools === 1 ? 's' : ''} <strong>${match.students.toLocaleString()}</strong> students, saving taxpayers <strong>$${formatMoney(savings)}</strong> each year`
+        : `No Catholic schools in this area.`;
+    document.getElementById('stats-headline').innerHTML = headline;
+
+    setStats(match.schools, match.students, match.staff, match.catholic_pop, match.capex_savings, match.ctc_savings);
+}
+
+function setStats(schools, students, staff, catholic, capex, ctc) {
+    document.getElementById('stat-schools').textContent = schools.toLocaleString();
+    document.getElementById('stat-students').textContent = students.toLocaleString();
+    document.getElementById('stat-staff').textContent = Math.round(staff).toLocaleString();
+    document.getElementById('stat-catholic').textContent = catholic.toLocaleString();
+    document.getElementById('stat-total-savings').textContent = '$' + formatMoney(capex + ctc);
+    document.getElementById('stat-savings-breakdown').innerHTML =
+        'Recurrent: $' + formatMoney(ctc) + '<br>Capital: $' + formatMoney(capex);
+}
+
+function formatMoney(val) {
+    val = Math.round(val);
+    if (val >= 1e9) return (val / 1e9).toFixed(2) + 'B';
+    if (val >= 1e6) return (val / 1e6).toFixed(1) + 'M';
+    if (val >= 1e3) return (val / 1e3).toFixed(0) + 'K';
+    return val.toLocaleString();
+}
+
+// ============================================================
+// BOUNDARY DISPLAY
+// ============================================================
+async function showBoundary(geoType, name) {
+    boundaryLayer.clearLayers();
+
+    const safeName = name.replace(/\//g, '-').replace(/ /g, '_');
+    let url = `${GEO_DIR}/${geoType}/${safeName}.json`;
+    let geojsonData = null;
+
+    try {
+        const resp = await fetch(url);
+        if (!resp.ok) throw new Error('Not found');
+        geojsonData = await resp.json();
+    } catch (e) {
+        try {
+            const resp = await fetch(`${GEO_DIR}/${geoType}_all.json`);
+            if (!resp.ok) return;
+            const allGeo = await resp.json();
+            geojsonData = {
+                type: 'FeatureCollection',
+                features: allGeo.features.filter(f => f.properties.name === name),
+            };
+            if (geojsonData.features.length === 0) return;
+        } catch (e2) {
+            console.warn('Could not load boundary for', geoType, name);
+            return;
+        }
+    }
+
+    const layer = L.geoJSON(geojsonData, {
+        style: {
+            color: '#0d3b66',
+            weight: 2,
+            fillColor: '#00c4f0',
+            fillOpacity: 0.06,
+        },
+        interactive: false,
+    }).addTo(boundaryLayer);
+
+    // Zoom to boundary. Islands clipped at prep stage (see GIS_LOG.md).
+    map.fitBounds(layer.getBounds(), { padding: [30, 30] });
+    schoolMarkers.bringToFront();
+}
+
+// Show suburb (SAL) boundary and zoom to it
+async function showSuburbBoundary(suburb, state) {
+    boundaryLayer.clearLayers();
+    const salNames = [suburb, `${suburb}_(${state})`];
+    for (const tryName of salNames) {
+        try {
+            const safeName = tryName.replace(/\//g, '-').replace(/ /g, '_');
+            const resp = await fetch(`${GEO_DIR}/sal/${safeName}.json`);
+            if (resp.ok) {
+                const geo = await resp.json();
+                const layer = L.geoJSON(geo, {
+                    style: { color: '#0d3b66', weight: 2, fillColor: '#00c4f0', fillOpacity: 0.06 },
+                    interactive: false,
+                }).addTo(boundaryLayer);
+                map.fitBounds(layer.getBounds(), { padding: [30, 30] });
+                schoolMarkers.bringToFront();
+                return;
+            }
+        } catch(e) {}
+    }
+    // No boundary file — zoom to school dots
+    const filtered = allSchools.filter(s => s.suburb === suburb && s.state === state);
+    if (filtered.length > 0) {
+        map.fitBounds(computeSchoolBounds(filtered), { padding: [50, 50] });
+    }
+}
+
+// ============================================================
+// FILTER SCHOOLS
+// ============================================================
+function filterSchoolsForBounds(geoType, name) {
+    if (geoType === 'state') {
+        return allSchools.filter(s => s.state === name);
+    } else {
+        return allSchools.filter(s => s[geoType] === name);
+    }
+}
+
+function filterSchools(geoType, name) {
+    const filtered = filterSchoolsForBounds(geoType, name);
+    addSchoolDots(filtered);
+    return filtered;
+}
+
+// ============================================================
+// RESET TO NATIONAL
+// ============================================================
+function resetToNational() {
+    boundaryLayer.clearLayers();
+    addSchoolDots(allSchools);
+    updateStats(null);
+    if (SCHOOL_BOUNDS) {
+        map.fitBounds(SCHOOL_BOUNDS, { padding: [10, 10] });
+    }
+    if (tomSelectInstance) {
+        tomSelectInstance.clear(true);
+    }
+}
+
+// ============================================================
+// SEARCH
+// ============================================================
+function buildSearch() {
+    const options = [];
+
+    if (allStats.state) {
+        allStats.state.forEach(s => {
+            if (s.name && s.name !== 'OT') {
+                options.push({ value: `state::${s.name}`, text: stateName(s.name), group: 'States' });
+            }
+        });
+    }
+    if (allStats.diocese) {
+        allStats.diocese.forEach(s => {
+            options.push({ value: `diocese::${s.name}`, text: s.name, group: 'Dioceses' });
+        });
+    }
+    if (allStats.ced) {
+        allStats.ced.forEach(s => {
+            options.push({ value: `ced::${s.name}`, text: s.name, group: 'Federal Electorates' });
+        });
+    }
+    if (allStats.sed) {
+        allStats.sed.forEach(s => {
+            options.push({ value: `sed::${s.name}`, text: s.name, group: 'State Electorates' });
+        });
+    }
+    if (allStats.lga) {
+        allStats.lga.forEach(s => {
+            options.push({ value: `lga::${s.name}`, text: s.name, group: 'Local Government Areas' });
+        });
+    }
+
+    // Suburbs — only those with Catholic schools, computed from school data
+    const suburbSet = new Set();
+    allSchools.forEach(s => {
+        if (s.suburb && s.state) {
+            const key = `${s.suburb}, ${s.state}`;
+            if (!suburbSet.has(key)) {
+                suburbSet.add(key);
+                options.push({ value: `suburb::${key}`, text: key, group: 'Suburbs' });
+            }
+        }
+    });
+
+    options.unshift({ value: 'national::Australia', text: 'Australia', group: 'National' });
+
+    tomSelectInstance = new TomSelect('#geo-search', {
+        options: options,
+        optgroups: [
+            { value: 'National', label: 'National' },
+            { value: 'States', label: 'States' },
+            { value: 'Dioceses', label: 'Dioceses' },
+            { value: 'Federal Electorates', label: 'Federal Electorates' },
+            { value: 'State Electorates', label: 'State Electorates' },
+            { value: 'Local Government Areas', label: 'Local Government Areas' },
+            { value: 'Suburbs', label: 'Suburbs' },
+        ],
+        optgroupField: 'group',
+        searchField: ['text'],
+        maxOptions: 20,
+        maxItems: 1,
+        onChange: async function(value) {
+            if (!value) return;
+            const [geoType, ...nameParts] = value.split('::');
+            const name = nameParts.join('::');
+            if (geoType === 'national') {
+                resetToNational();
+            } else if (geoType === 'suburb') {
+                // Suburb: filter schools, show stats, show boundary, zoom
+                const [suburb, state] = name.split(', ');
+                const filtered = allSchools.filter(s => s.suburb === suburb && s.state === state);
+                addSchoolDots(filtered);
+
+                // Stats — use stats_suburb.json if available, else compute from schools
+                updateStats({ geoType, name });
+
+                // Boundary — SAL files are in geo/sal/
+                await showSuburbBoundary(suburb, state);
+            } else {
+                filterSchools(geoType, name);
+                updateStats({ geoType, name });
+                showBoundary(geoType, name);
+            }
+        },
+        onFocus: function() {
+            // Clear previous selection so user can type a new search
+            this.clear(true);
+        },
+    });
+}
+
+// ============================================================
+// ============================================================
+// PDF EXPORT — HTML template + html2canvas + jsPDF
+// ============================================================
+function formatMoneyPDF(val) {
+    val = Math.round(val);
+    if (val >= 1e9) return (val / 1e9).toFixed(2) + 'B';
+    if (val >= 1e6) return (val / 1e6).toFixed(1) + 'M';
+    if (val >= 1e3) return (val / 1e3).toFixed(0) + 'K';
+    return val.toLocaleString();
+}
+
+async function generateSilhouetteMap(geoType, name, canvasW, canvasH, schoolsToDraw) {
+    var geojsonData = null;
+    if (name === '__all__') {
+        var respAll = await fetch(GEO_DIR + '/' + geoType + '_all.json');
+        geojsonData = await respAll.json();
+    } else if (geoType === 'suburb') {
+        var parts = name.split(', ');
+        var suburb = parts[0], state = parts[1];
+        var salNames = [suburb, suburb + '_(' + state + ')'];
+        for (var si = 0; si < salNames.length; si++) {
+            var safeSal = salNames[si].replace(/\//g, '-').replace(/ /g, '_');
+            try {
+                var salResp = await fetch(GEO_DIR + '/sal/' + safeSal + '.json');
+                if (salResp.ok) { geojsonData = await salResp.json(); break; }
+            } catch(e) {}
+        }
+        if (!geojsonData) throw new Error('No boundary data found');
+    } else {
+        var safeName = name.replace(/\//g, '-').replace(/ /g, '_');
+        try {
+            var resp = await fetch(GEO_DIR + '/' + geoType + '/' + safeName + '.json');
+            if (!resp.ok) throw new Error('Not found');
+            geojsonData = await resp.json();
+        } catch (e) {
+            var resp2 = await fetch(GEO_DIR + '/' + geoType + '_all.json');
+            var allGeo = await resp2.json();
+            geojsonData = {
+                type: 'FeatureCollection',
+                features: allGeo.features.filter(function(f) { return f.properties.name === name; }),
+            };
+        }
+    }
+    if (!geojsonData || !geojsonData.features || geojsonData.features.length === 0) {
+        throw new Error('No boundary data found');
+    }
+
+    var minLng = Infinity, maxLng = -Infinity, minLat = Infinity, maxLat = -Infinity;
+    function walkCoords(coords) {
+        if (typeof coords[0] === 'number') {
+            minLng = Math.min(minLng, coords[0]); maxLng = Math.max(maxLng, coords[0]);
+            minLat = Math.min(minLat, coords[1]); maxLat = Math.max(maxLat, coords[1]);
+        } else { coords.forEach(function(c) { walkCoords(c); }); }
+    }
+    geojsonData.features.forEach(function(f) { walkCoords(f.geometry.coordinates); });
+
+    var padLeft = 0.0, padRight = 0.08, padTop = 0.08, padBottom = 0.08;
+    var bMinLng = minLng - (maxLng-minLng)*padLeft, bMaxLng = maxLng + (maxLng-minLng)*padRight;
+    var bMinLat = minLat - (maxLat-minLat)*padBottom, bMaxLat = maxLat + (maxLat-minLat)*padTop;
+    var scaleX = canvasW / (bMaxLng - bMinLng);
+    var scaleY = canvasH / (bMaxLat - bMinLat);
+    var scale = Math.min(scaleX, scaleY);
+    var offsetX = (canvasW - (bMaxLng - bMinLng) * scale) / 2;
+    var offsetY = (canvasH - (bMaxLat - bMinLat) * scale) / 2;
+
+    function toCanvas(lng, lat) {
+        return [offsetX + (lng - bMinLng) * scale, canvasH - (offsetY + (lat - bMinLat) * scale)];
+    }
+
+    var canvas = document.createElement('canvas');
+    canvas.width = canvasW; canvas.height = canvasH;
+    var ctx = canvas.getContext('2d');
+    ctx.fillStyle = '#ffffff';
+    ctx.fillRect(0, 0, canvasW, canvasH);
+    ctx.strokeStyle = '#0d3b66';
+    ctx.lineWidth = Math.max(1, Math.round(canvasW * 2 / 3600));
+    ctx.fillStyle = 'rgba(180, 200, 215, 0.5)';
+
+    function drawRing(ring, proj) {
+        if (!ring.length) return;
+        var p = proj(ring[0][0], ring[0][1]);
+        ctx.moveTo(p[0], p[1]);
+        for (var i = 1; i < ring.length; i++) {
+            p = proj(ring[i][0], ring[i][1]);
+            ctx.lineTo(p[0], p[1]);
+        }
+        ctx.closePath();
+    }
+
+    function drawFeatures(features, proj) {
+        features.forEach(function(f) {
+            ctx.beginPath();
+            if (f.geometry.type === 'Polygon') {
+                f.geometry.coordinates.forEach(function(ring) { drawRing(ring, proj); });
+            } else if (f.geometry.type === 'MultiPolygon') {
+                f.geometry.coordinates.forEach(function(poly) {
+                    poly.forEach(function(ring) { drawRing(ring, proj); });
+                });
+            }
+            ctx.fill(); ctx.stroke();
+        });
+    }
+
+    drawFeatures(geojsonData.features, toCanvas);
+
+    // Draw school dots
+    if (schoolsToDraw && schoolsToDraw.length > 0) {
+        var dotRadius = Math.round(canvasW * 16 / 3600);
+        ctx.fillStyle = 'rgba(255, 160, 49, 0.6)';
+        ctx.strokeStyle = '#e8912a';
+        ctx.lineWidth = Math.max(1, dotRadius * 0.3);
+        schoolsToDraw.forEach(function(s) {
+            if (!s.lat || !s.lon) return;
+            var p = toCanvas(s.lon, s.lat);
+            ctx.beginPath();
+            ctx.arc(p[0], p[1], dotRadius, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.stroke();
+        });
+    }
+
+    return canvas.toDataURL('image/png');
+}
+
+async function downloadPDF() {
+    var btn = document.getElementById('download-btn');
+    btn.textContent = 'Generating PDF...';
+    btn.disabled = true;
+
+    try {
+        // Read current stats from sidebar
+        var geoName = document.getElementById('geo-name').textContent;
+        var schools = document.getElementById('stat-schools').textContent;
+        var students = document.getElementById('stat-students').textContent;
+        var staffVal = document.getElementById('stat-staff').textContent;
+        var catholic = document.getElementById('stat-catholic').textContent;
+
+        // Determine geography for map
+        var searchVal = tomSelectInstance ? tomSelectInstance.getValue() : '';
+        var mapGeoType, mapGeoName, filteredSchools;
+
+        if (!searchVal || searchVal.startsWith('national')) {
+            mapGeoType = 'state';
+            mapGeoName = '__all__';
+            filteredSchools = allSchools;
+        } else {
+            var parts = searchVal.split('::');
+            mapGeoType = parts[0];
+            mapGeoName = parts.slice(1).join('::');
+            if (mapGeoType === 'state') {
+                filteredSchools = allSchools.filter(function(s) { return s.state === mapGeoName; });
+            } else if (mapGeoType === 'suburb') {
+                var sp = mapGeoName.split(', ');
+                filteredSchools = allSchools.filter(function(s) { return s.suburb === sp[0] && s.state === sp[1]; });
+            } else {
+                filteredSchools = allSchools.filter(function(s) { return s[mapGeoType] === mapGeoName; });
+            }
+        }
+
+        // Populate PDF template
+        var pdfSuffix = geoSuffix(mapGeoType === 'state' && mapGeoName === '__all__' ? '' : mapGeoType, mapGeoName);
+        if (pdfSuffix) {
+            document.getElementById('pdf-geo-name').innerHTML = geoName + ' <span class="pdf-geo-suffix">' + pdfSuffix + '</span>';
+        } else {
+            document.getElementById('pdf-geo-name').textContent = geoName;
+        }
+        document.getElementById('pdf-schools').textContent = schools;
+        document.getElementById('pdf-students').textContent = students;
+        document.getElementById('pdf-staff').textContent = staffVal;
+        document.getElementById('pdf-community').textContent = catholic;
+
+        // Recalculate savings with 2 decimal places for PDF
+        var capex = 0, ctc = 0;
+        filteredSchools.forEach(function(s) {
+            capex += s.capex_savings || 0;
+            ctc += s.ctc_savings || 0;
+        });
+        document.getElementById('pdf-savings').textContent = '$' + formatMoneyPDF(capex + ctc);
+
+        // Make template visible for measurement (visibility:hidden → visible)
+        var template = document.getElementById('pdf-template');
+        template.style.visibility = 'visible';
+
+        // Read map container dimensions and generate silhouette at matched size
+        var mapArea = template.querySelector('.pdf-map-area');
+        var mapW = mapArea.offsetWidth * 2;
+        var mapH = mapArea.offsetHeight * 2;
+        var mapUrl = await generateSilhouetteMap(mapGeoType, mapGeoName, mapW, mapH, filteredSchools);
+        var mapImg = document.getElementById('pdf-map');
+        mapImg.src = mapUrl;
+
+        // Wait for image to load
+        await new Promise(function(resolve) {
+            mapImg.onload = resolve;
+            if (mapImg.complete) resolve();
+        });
+
+        // Small delay for layout to settle
+        await new Promise(function(resolve) { setTimeout(resolve, 50); });
+
+        // Render to canvas
+        var canvas = await html2canvas(template, {
+            scale: 1.5,
+            useCORS: true,
+            backgroundColor: '#ffffff',
+            width: 1123,
+            height: 794,
+        });
+
+        // Hide template again
+        template.style.visibility = 'hidden';
+
+        // Create PDF
+        var imgData = canvas.toDataURL('image/jpeg', 0.92);
+        var jsPDFClass = window.jspdf.jsPDF;
+        var pdf = new jsPDFClass({ orientation: 'landscape', unit: 'mm', format: 'a4' });
+        pdf.addImage(imgData, 'JPEG', 0, 0, 297, 210);
+
+        var filename = geoName.replace(/[^a-zA-Z0-9]/g, '_') + '_Catholic_Schools.pdf';
+        pdf.save(filename);
+
+    } catch (err) {
+        console.error('PDF export failed:', err);
+        alert('PDF export failed: ' + err.message);
+    } finally {
+        var template = document.getElementById('pdf-template');
+        template.style.visibility = 'hidden';
+        btn.textContent = 'Download as PDF';
+        btn.disabled = false;
+    }
+}
+
+// ============================================================
+// INIT
+// ============================================================
+initMap();
+loadData();
+lucide.createIcons();
+</script>
+
+</body>
+</html>

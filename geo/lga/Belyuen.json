@@ -1,0 +1,8 @@
+{
+"type": "FeatureCollection",
+"name": "Belyuen",
+"crs": { "type": "name", "properties": { "name": "urn:ogc:def:crs:OGC:1.3:CRS84" } },
+"features": [
+{ "type": "Feature", "properties": { "name": "Belyuen" }, "geometry": { "type": "Polygon", "coordinates": [ [ [ 130.71279826538634, -12.567275889677937 ], [ 130.65357033818708, -12.567218559328305 ], [ 130.653590478533374, -12.509081178891444 ], [ 130.712772675750557, -12.50908224924002 ], [ 130.71279826538634, -12.567275889677937 ] ] ] } }
+]
+}
