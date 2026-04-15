@@ -759,7 +759,9 @@ async function loadData() {
     buildSearch();
 
     // Retry any map tiles that failed during initial network congestion
-    setTimeout(function() { tileLayer.redraw(); }, 2000);
+    var tileErrors = 0;
+    tileLayer.on('tileerror', function() { tileErrors++; });
+    setTimeout(function() { if (tileErrors > 0) tileLayer.redraw(); }, 2000);
 }
 
 // ============================================================
