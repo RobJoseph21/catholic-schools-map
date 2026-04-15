@@ -80,6 +80,18 @@
             color: white;
         }
 
+        .draft-badge {
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 3px 10px;
+            border-radius: 4px;
+            letter-spacing: 1px;
+            margin-left: 12px;
+            white-space: nowrap;
+        }
+
         .search-container {
             flex: 0 1 480px;
             min-width: 280px;
@@ -537,6 +549,7 @@
 <div class="header">
     <div class="header-brand" onclick="resetToNational()" title="Back to Australia">
         <div class="header-title">Catholic Schools <span>in Australia</span></div>
+        <span class="draft-badge">WORKING DRAFT</span>
     </div>
     <div class="search-container">
         <select id="geo-search" placeholder="Search electorate, diocese, LGA, suburb..."></select>
