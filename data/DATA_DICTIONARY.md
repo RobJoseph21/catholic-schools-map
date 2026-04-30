@@ -21,9 +21,9 @@ One record per Catholic school. Used for map dots and hover details.
 | non_teaching_staff | float | School Profile | FTE Non-Teaching Staff |
 | total_staff | float | Derived | teaching_staff + non_teaching_staff |
 | icsea | int | School Profile | ICSEA score |
-| capex_savings | float | DUMMY | Perturbed CAPEX savings ($). NOT REAL. |
-| ctc_savings | float | DUMMY | Perturbed CTC/recurrent savings ($). NOT REAL. |
-| total_savings | float | DUMMY | capex_savings + ctc_savings. NOT REAL. |
+| capex_savings | float | Savings Extract.xlsx → 'Capex Savings (2022-24 method)' | Per-school CAPEX savings. Distributed within each cohort×state pot pro-rata by each school's Total Capital Expenditure 2022-24. Cohorts: Catholic = `Sector == 'Catholic (incl. RI/MPJP)'`, Independent = non-Catholic non-Government. Source pot = sum of original per-capita-derived `capex_savings` within each cohort×state, preserved within rounding. To switch methods, change the right-hand value in `rebuild_data.py` FIELD_MAP — alternatives in same xlsx are 'capex_savings' (per-capita), 'Capex Savings (2024 method)' (capex-weighted, 2024 only), 'Capex Savings (50:50 blend)' (50% per-capita + 50% 2022-24). |
+| ctc_savings | float | Savings Extract.xlsx → 'ctc_savings' | Per-school CTC/recurrent savings, distributed per-capita by enrolments within cohort×state. |
+| total_savings | float | Derived | capex_savings + ctc_savings. |
 | diocese | string | Sector/Diocese lookup or spatial join | Catholic diocese name |
 | ced | string | Spatial join | Federal electorate name (2025 boundaries) |
 | sed | string | Spatial join | State electorate name (2025 boundaries) |

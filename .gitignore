@@ -6,6 +6,10 @@ pdf_trial_jspdf.html
 icon_preview.html
 test_output*.pdf
 
+# Local-only working folders (not for the public site)
+Backup/
+Trial/
+
 # Python scripts (data pipeline, not needed for the website)
 rebuild_data.py
 validate.py

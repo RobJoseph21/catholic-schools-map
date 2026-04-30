@@ -93,8 +93,23 @@
         }
 
         .search-container {
-            flex: 0 1 480px;
+            width: 480px;
             min-width: 280px;
+            flex-shrink: 1;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            flex: 0 1 auto;
+        }
+
+        .header-logo {
+            height: 36px;
+            width: auto;
+            flex-shrink: 0;
+            display: block;
         }
 
         /* ===== MAIN LAYOUT ===== */
@@ -423,10 +438,17 @@
             padding: 24px 32px 0 32px;
             display: flex;
             justify-content: space-between;
-            align-items: flex-start;
+            align-items: flex-end;
         }
 
         .pdf-header-left { flex: 1; }
+
+        .pdf-logo {
+            height: 54px;
+            width: auto;
+            flex-shrink: 0;
+            display: block;
+        }
 
         .pdf-subtitle {
             font-size: 17px;
@@ -551,8 +573,11 @@
         <div class="header-title">Catholic Schools <span>in Australia</span></div>
         <span class="draft-badge">WORKING DRAFT</span>
     </div>
-    <div class="search-container">
-        <select id="geo-search" placeholder="Search electorate, diocese, LGA, suburb..."></select>
+    <div class="header-right">
+        <div class="search-container">
+            <select id="geo-search" placeholder="Search electorate, diocese, LGA, suburb..."></select>
+        </div>
+        <img class="header-logo" src="CSNSW_logo_mono.png" alt="Catholic Schools NSW">
     </div>
 </div>
 
@@ -620,6 +645,7 @@
             <div class="pdf-subtitle">Catholic school community in</div>
             <div class="pdf-geo-name" id="pdf-geo-name">Australia</div>
         </div>
+        <img class="pdf-logo" src="CSNSW_logo.png" alt="Catholic Schools NSW">
     </div>
     <div class="pdf-rule"></div>
     <div class="pdf-content">
@@ -845,7 +871,8 @@ function updateStats(selection) {
         sed: 'STATE ELECTORATE', lga: 'LOCAL GOVERNMENT AREA', suburb: 'SUBURB',
     };
 
-    document.getElementById('geo-type').textContent = typeLabels[geoType] || geoType.toUpperCase();
+    const isArchdiocese = geoType === 'diocese' && ARCHDIOCESES.includes(name);
+    document.getElementById('geo-type').textContent = isArchdiocese ? 'ARCHDIOCESE' : (typeLabels[geoType] || geoType.toUpperCase());
     const displayName = geoType === 'state' ? stateName(name) : name;
     document.getElementById('geo-name').textContent = displayName;
 
@@ -1134,14 +1161,17 @@ async function generateSilhouetteMap(geoType, name, canvasW, canvasH, schoolsToD
     var padLeft = 0.0, padRight = 0.08, padTop = 0.08, padBottom = 0.08;
     var bMinLng = minLng - (maxLng-minLng)*padLeft, bMaxLng = maxLng + (maxLng-minLng)*padRight;
     var bMinLat = minLat - (maxLat-minLat)*padBottom, bMaxLat = maxLat + (maxLat-minLat)*padTop;
-    var scaleX = canvasW / (bMaxLng - bMinLng);
+    // Compress longitude by cos(meanLat) so 1° lng ≈ true km-equivalent of 1° lat.
+    // Without this the projection is naive equirectangular and large states (e.g. NSW) appear stretched horizontally.
+    var lngCompress = Math.cos(((minLat + maxLat) / 2) * Math.PI / 180);
+    var scaleX = canvasW / ((bMaxLng - bMinLng) * lngCompress);
     var scaleY = canvasH / (bMaxLat - bMinLat);
     var scale = Math.min(scaleX, scaleY);
-    var offsetX = (canvasW - (bMaxLng - bMinLng) * scale) / 2;
+    var offsetX = (canvasW - (bMaxLng - bMinLng) * lngCompress * scale) / 2;
     var offsetY = (canvasH - (bMaxLat - bMinLat) * scale) / 2;
 
     function toCanvas(lng, lat) {
-        return [offsetX + (lng - bMinLng) * scale, canvasH - (offsetY + (lat - bMinLat) * scale)];
+        return [offsetX + (lng - bMinLng) * lngCompress * scale, canvasH - (offsetY + (lat - bMinLat) * scale)];
     }
 
     var canvas = document.createElement('canvas');
