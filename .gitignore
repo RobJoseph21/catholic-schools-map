@@ -9,6 +9,7 @@ test_output*.pdf
 # Local-only working folders (not for the public site)
 Backup/
 Trial/
+source/
 
 # Python scripts (data pipeline, not needed for the website)
 rebuild_data.py
